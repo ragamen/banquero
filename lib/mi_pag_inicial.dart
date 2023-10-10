@@ -106,76 +106,80 @@ class DashboardScreenState extends State<DashboardScreen> {
     if (selectedOption == 'Agregar Franquicia') {
       iniciarFranquicia();
       listaFranquicias = [];
-      return Column(
-        children: [
-          TextField(
-            controller: codigoFranquicia,
-            decoration:
-                const InputDecoration(labelText: 'Código de Franquicia'),
+      return Expanded(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextField(
+                controller: codigoFranquicia,
+                decoration:
+                    const InputDecoration(labelText: 'Código de Franquicia'),
+              ),
+              TextField(
+                controller: nombreFranquicia,
+                decoration:
+                    const InputDecoration(labelText: 'Nombre de Franquicia'),
+              ),
+              TextField(
+                controller: direccion,
+                decoration: const InputDecoration(labelText: 'Dirección'),
+              ),
+              TextFormField(
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Escribe el correo';
+                  }
+                  return null;
+                },
+                controller: correo,
+                decoration: const InputDecoration(labelText: 'Correo'),
+              ),
+              TextField(
+                controller: banco,
+                decoration: const InputDecoration(labelText: 'Banco'),
+              ),
+              TextField(
+                controller: telefono,
+                decoration: const InputDecoration(labelText: 'Teléfono'),
+              ),
+              TextField(
+                controller: cedulaadmin,
+                decoration: const InputDecoration(
+                    labelText: 'Cédula del Administrador'),
+              ),
+              TextField(
+                controller: cupo,
+                decoration: const InputDecoration(labelText: 'Cupo'),
+              ),
+              TextField(
+                controller: comision,
+                decoration: const InputDecoration(labelText: 'Comisión'),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  child: const Text('Agregar'),
+                  onPressed: () {
+                    Franquicia franquicia = Franquicia(
+                      codigofranquicia: codigoFranquicia.text,
+                      nombrefranquicia: nombreFranquicia.text,
+                      direccion: direccion.text,
+                      correo: correo.text,
+                      banco: banco.text,
+                      telefono: telefono.text,
+                      cedulaadmin: cedulaadmin.text,
+                      cupo: double.parse(cupo.text),
+                      comision: 0.0,
+                    );
+                    FranquiciaHelper.createFranquicia(franquicia);
+                    iniciarFranquicia();
+                    //llamar a agregar o insertar franquicia
+                  },
+                ),
+              ),
+            ],
           ),
-          TextField(
-            controller: nombreFranquicia,
-            decoration:
-                const InputDecoration(labelText: 'Nombre de Franquicia'),
-          ),
-          TextField(
-            controller: direccion,
-            decoration: const InputDecoration(labelText: 'Dirección'),
-          ),
-          TextFormField(
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Escribe el correo';
-              }
-              return null;
-            },
-            controller: correo,
-            decoration: const InputDecoration(labelText: 'Correo'),
-          ),
-          TextField(
-            controller: banco,
-            decoration: const InputDecoration(labelText: 'Banco'),
-          ),
-          TextField(
-            controller: telefono,
-            decoration: const InputDecoration(labelText: 'Teléfono'),
-          ),
-          TextField(
-            controller: cedulaadmin,
-            decoration:
-                const InputDecoration(labelText: 'Cédula del Administrador'),
-          ),
-          TextField(
-            controller: cupo,
-            decoration: const InputDecoration(labelText: 'Cupo'),
-          ),
-          TextField(
-            controller: comision,
-            decoration: const InputDecoration(labelText: 'Comisión'),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              child: const Text('Agregar'),
-              onPressed: () {
-                Franquicia franquicia = Franquicia(
-                  codigofranquicia: codigoFranquicia.text,
-                  nombrefranquicia: nombreFranquicia.text,
-                  direccion: direccion.text,
-                  correo: correo.text,
-                  banco: banco.text,
-                  telefono: telefono.text,
-                  cedulaadmin: cedulaadmin.text,
-                  cupo: double.parse(cupo.text),
-                  comision: 0.0,
-                );
-                FranquiciaHelper.createFranquicia(franquicia);
-                iniciarFranquicia();
-                //llamar a agregar o insertar franquicia
-              },
-            ),
-          ),
-        ],
+        ),
       );
     } else if (selectedOption == 'Actualizar Franquicia') {
       if (listaFranquicias.isEmpty) {
@@ -185,126 +189,132 @@ class DashboardScreenState extends State<DashboardScreen> {
           selectedFranquicia = listaFranquicias[0];
         }
       }
-      return Column(
-        children: [
-          DropdownButton<Franquicia>(
-            value: selectedFranquicia, // Franquicia seleccionada
-            hint: const Text(
-              'Selecciona una franquicia',
-              style: TextStyle(
-                color: Color.fromARGB(
-                    255, 247, 11, 11), // Cambia el color del texto aquí
+      return Expanded(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              DropdownButton<Franquicia>(
+                value: selectedFranquicia, // Franquicia seleccionada
+                hint: const Text(
+                  'Selecciona una franquicia',
+                  style: TextStyle(
+                    color: Color.fromARGB(
+                        255, 247, 11, 11), // Cambia el color del texto aquí
+                  ),
+                ), // Texto de sugerencia
+                items: listaFranquicias.map((items) {
+                  return DropdownMenuItem<Franquicia>(
+                    value: items,
+                    child: Text(items.nombrefranquicia),
+                  );
+                }).toList(),
+                onChanged: (items) {
+                  setState(() {
+                    iniciarFranquicia();
+                    selectedFranquicia =
+                        items; // Actualizar la franquicia seleccionada
+                  });
+                },
               ),
-            ), // Texto de sugerencia
-            items: listaFranquicias.map((items) {
-              return DropdownMenuItem<Franquicia>(
-                value: items,
-                child: Text(items.nombrefranquicia),
-              );
-            }).toList(),
-            onChanged: (items) {
-              setState(() {
-                iniciarFranquicia();
-                selectedFranquicia =
-                    items; // Actualizar la franquicia seleccionada
-              });
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              child: const Text('Buscar'),
-              onPressed: () async {
-                if (selectedFranquicia != null) {
-                  codigoFranquicia.text = selectedFranquicia!.codigofranquicia;
-                  nombreFranquicia.text = selectedFranquicia!.nombrefranquicia;
-                  direccion.text = selectedFranquicia!.direccion;
-                  correo.text = selectedFranquicia!.correo;
-                  banco.text = selectedFranquicia!.banco;
-                  telefono.text = selectedFranquicia!.telefono;
-                  cedulaadmin.text = selectedFranquicia!.cedulaadmin;
-                  cupo.text = selectedFranquicia!.cupo.toString();
-                  comision.text = selectedFranquicia!.comision.toString();
-                }
-                // Lógica para buscar el registro a actualizar
-              },
-            ),
-          ),
-          // Mostrar los campos para actualizar los datos
-          TextField(
-            controller: nombreFranquicia,
-            decoration:
-                const InputDecoration(labelText: 'Nombre de Franquicia'),
-          ),
-          TextField(
-            decoration: const InputDecoration(labelText: 'Dirección'),
-            controller: direccion,
-          ),
-          TextFormField(
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Escribe el correo';
-              }
-              return null;
-            },
-            controller: correo,
-            decoration: const InputDecoration(labelText: 'Correo'),
-          ),
-          TextField(
-            controller: banco,
-            decoration: const InputDecoration(labelText: 'Banco'),
-          ),
-          TextField(
-            controller: telefono,
-            decoration: const InputDecoration(labelText: 'Teléfono'),
-          ),
-          TextField(
-            controller: cedulaadmin,
-            decoration:
-                const InputDecoration(labelText: 'Cédula del Administrador'),
-          ),
-          TextField(
-            controller: cupo,
-            decoration: const InputDecoration(labelText: 'Cupo'),
-          ),
-          TextField(
-            controller: comision,
-            decoration: const InputDecoration(labelText: 'Comisión'),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              child: const Text('Actualizar'),
-              onPressed: () {
-                Franquicia franquicia = Franquicia(
-                  codigofranquicia: codigoFranquicia.text,
-                  nombrefranquicia: nombreFranquicia.text,
-                  direccion: direccion.text,
-                  correo: correo.text,
-                  banco: banco.text,
-                  telefono: telefono.text,
-                  cedulaadmin: cedulaadmin.text,
-                  cupo: double.parse(cupo.text),
-                  comision: double.parse(comision.text),
-                );
-                FranquiciaHelper.updateFranquicia(franquicia);
-                setState(() {
-                  iniciarFranquicia();
-                  listaFranquicias = [];
-                  FranquiciaActual.franquiciaActual = [];
-                  leerfranquicias();
-//                  if (FranquiciaActual.franquiciaActual.isNotEmpty) {
-//                    listaFranquicias = FranquiciaActual.franquiciaActual;
-//                    selectedFranquicia = listaFranquicias[0];
-//                  }
-//                  selectedOption = 'Agregar Franquicia';
-                });
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  child: const Text('Buscar'),
+                  onPressed: () async {
+                    if (selectedFranquicia != null) {
+                      codigoFranquicia.text =
+                          selectedFranquicia!.codigofranquicia;
+                      nombreFranquicia.text =
+                          selectedFranquicia!.nombrefranquicia;
+                      direccion.text = selectedFranquicia!.direccion;
+                      correo.text = selectedFranquicia!.correo;
+                      banco.text = selectedFranquicia!.banco;
+                      telefono.text = selectedFranquicia!.telefono;
+                      cedulaadmin.text = selectedFranquicia!.cedulaadmin;
+                      cupo.text = selectedFranquicia!.cupo.toString();
+                      comision.text = selectedFranquicia!.comision.toString();
+                    }
+                    // Lógica para buscar el registro a actualizar
+                  },
+                ),
+              ),
+              // Mostrar los campos para actualizar los datos
+              TextField(
+                controller: nombreFranquicia,
+                decoration:
+                    const InputDecoration(labelText: 'Nombre de Franquicia'),
+              ),
+              TextField(
+                decoration: const InputDecoration(labelText: 'Dirección'),
+                controller: direccion,
+              ),
+              TextFormField(
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Escribe el correo';
+                  }
+                  return null;
+                },
+                controller: correo,
+                decoration: const InputDecoration(labelText: 'Correo'),
+              ),
+              TextField(
+                controller: banco,
+                decoration: const InputDecoration(labelText: 'Banco'),
+              ),
+              TextField(
+                controller: telefono,
+                decoration: const InputDecoration(labelText: 'Teléfono'),
+              ),
+              TextField(
+                controller: cedulaadmin,
+                decoration: const InputDecoration(
+                    labelText: 'Cédula del Administrador'),
+              ),
+              TextField(
+                controller: cupo,
+                decoration: const InputDecoration(labelText: 'Cupo'),
+              ),
+              TextField(
+                controller: comision,
+                decoration: const InputDecoration(labelText: 'Comisión'),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  child: const Text('Actualizar'),
+                  onPressed: () {
+                    Franquicia franquicia = Franquicia(
+                      codigofranquicia: codigoFranquicia.text,
+                      nombrefranquicia: nombreFranquicia.text,
+                      direccion: direccion.text,
+                      correo: correo.text,
+                      banco: banco.text,
+                      telefono: telefono.text,
+                      cedulaadmin: cedulaadmin.text,
+                      cupo: double.parse(cupo.text),
+                      comision: double.parse(comision.text),
+                    );
+                    FranquiciaHelper.updateFranquicia(franquicia);
+                    setState(() {
+                      iniciarFranquicia();
+                      listaFranquicias = [];
+                      FranquiciaActual.franquiciaActual = [];
+                      leerfranquicias();
+                      //                  if (FranquiciaActual.franquiciaActual.isNotEmpty) {
+                      //                    listaFranquicias = FranquiciaActual.franquiciaActual;
+                      //                    selectedFranquicia = listaFranquicias[0];
+                      //                  }
+                      //                  selectedOption = 'Agregar Franquicia';
+                    });
 
-                // Lógica para actualizar el registro
-              },
-            ),
+                    // Lógica para actualizar el registro
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       );
     } else if (selectedOption == 'Eliminar Franquicia') {
       //  franquicias = FranquiciaActual.franquiciaActual;
@@ -316,106 +326,113 @@ class DashboardScreenState extends State<DashboardScreen> {
         }
       }
 
-      return Column(
-        children: [
-          DropdownButton<Franquicia>(
-            value: selectedFranquicia, // Franquicia seleccionada
-            hint: const Text(
-              'Selecciona una franquicia',
-              style: TextStyle(
-                color: Color.fromARGB(
-                    255, 247, 11, 11), // Cambia el color del texto aquí
+      return Expanded(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              DropdownButton<Franquicia>(
+                value: selectedFranquicia, // Franquicia seleccionada
+                hint: const Text(
+                  'Selecciona una franquicia',
+                  style: TextStyle(
+                    color: Color.fromARGB(
+                        255, 247, 11, 11), // Cambia el color del texto aquí
+                  ),
+                ), // Texto de sugerencia
+                items: listaFranquicias.map((items) {
+                  return DropdownMenuItem<Franquicia>(
+                    value: items,
+                    child: Text(items.nombrefranquicia),
+                  );
+                }).toList(),
+                onChanged: (items) {
+                  setState(() {
+                    iniciarFranquicia();
+                    selectedFranquicia =
+                        items; // Actualizar la franquicia seleccionada
+                  });
+                },
               ),
-            ), // Texto de sugerencia
-            items: listaFranquicias.map((items) {
-              return DropdownMenuItem<Franquicia>(
-                value: items,
-                child: Text(items.nombrefranquicia),
-              );
-            }).toList(),
-            onChanged: (items) {
-              setState(() {
-                iniciarFranquicia();
-                selectedFranquicia =
-                    items; // Actualizar la franquicia seleccionada
-              });
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              child: const Text('Buscar'),
-              onPressed: () async {
-                if (selectedFranquicia != null) {
-                  codigoFranquicia.text = selectedFranquicia!.codigofranquicia;
-                  nombreFranquicia.text = selectedFranquicia!.nombrefranquicia;
-                  direccion.text = selectedFranquicia!.direccion;
-                  correo.text = selectedFranquicia!.correo;
-                  banco.text = selectedFranquicia!.banco;
-                  telefono.text = selectedFranquicia!.telefono;
-                  cedulaadmin.text = selectedFranquicia!.cedulaadmin;
-                  cupo.text = selectedFranquicia!.cupo.toString();
-                  comision.text = selectedFranquicia!.comision.toString();
-                }
-                // Lógica para buscar el registro a actualizar
-              },
-            ),
-          ),
-          TextField(
-            controller: nombreFranquicia,
-            decoration:
-                const InputDecoration(labelText: 'Nombre de Franquicia'),
-          ),
-          TextField(
-            decoration: const InputDecoration(labelText: 'Dirección'),
-            controller: direccion,
-          ),
-          TextField(
-            decoration: const InputDecoration(labelText: 'Correo'),
-            controller: correo,
-          ),
-          TextField(
-            controller: banco,
-            decoration: const InputDecoration(labelText: 'Banco'),
-          ),
-          TextField(
-            controller: telefono,
-            decoration: const InputDecoration(labelText: 'Teléfono'),
-          ),
-          TextField(
-            controller: cedulaadmin,
-            decoration:
-                const InputDecoration(labelText: 'Cédula del Administrador'),
-          ),
-          TextField(
-            controller: cupo,
-            decoration: const InputDecoration(labelText: 'Cupo'),
-          ),
-          TextField(
-            controller: comision,
-            decoration: const InputDecoration(labelText: 'Comisión'),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              child: const Text('Eliminar'),
-              onPressed: () {
-                codigoFranquicia.text = selectedFranquicia!.codigofranquicia;
-                FranquiciaHelper.deleteFranquicia(codigoFranquicia.text);
-                setState(() {
-                  listaFranquicias = [];
-                  FranquiciaActual.franquiciaActual = [];
-                  iniciarFranquicia();
-                  leerfranquicias();
-                  listaFranquicias = FranquiciaActual.franquiciaActual;
-                  selectedFranquicia = listaFranquicias[0];
-                });
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  child: const Text('Buscar'),
+                  onPressed: () async {
+                    if (selectedFranquicia != null) {
+                      codigoFranquicia.text =
+                          selectedFranquicia!.codigofranquicia;
+                      nombreFranquicia.text =
+                          selectedFranquicia!.nombrefranquicia;
+                      direccion.text = selectedFranquicia!.direccion;
+                      correo.text = selectedFranquicia!.correo;
+                      banco.text = selectedFranquicia!.banco;
+                      telefono.text = selectedFranquicia!.telefono;
+                      cedulaadmin.text = selectedFranquicia!.cedulaadmin;
+                      cupo.text = selectedFranquicia!.cupo.toString();
+                      comision.text = selectedFranquicia!.comision.toString();
+                    }
+                    // Lógica para buscar el registro a actualizar
+                  },
+                ),
+              ),
+              TextField(
+                controller: nombreFranquicia,
+                decoration:
+                    const InputDecoration(labelText: 'Nombre de Franquicia'),
+              ),
+              TextField(
+                decoration: const InputDecoration(labelText: 'Dirección'),
+                controller: direccion,
+              ),
+              TextField(
+                decoration: const InputDecoration(labelText: 'Correo'),
+                controller: correo,
+              ),
+              TextField(
+                controller: banco,
+                decoration: const InputDecoration(labelText: 'Banco'),
+              ),
+              TextField(
+                controller: telefono,
+                decoration: const InputDecoration(labelText: 'Teléfono'),
+              ),
+              TextField(
+                controller: cedulaadmin,
+                decoration: const InputDecoration(
+                    labelText: 'Cédula del Administrador'),
+              ),
+              TextField(
+                controller: cupo,
+                decoration: const InputDecoration(labelText: 'Cupo'),
+              ),
+              TextField(
+                controller: comision,
+                decoration: const InputDecoration(labelText: 'Comisión'),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton(
+                  child: const Text('Eliminar'),
+                  onPressed: () {
+                    codigoFranquicia.text =
+                        selectedFranquicia!.codigofranquicia;
+                    FranquiciaHelper.deleteFranquicia(codigoFranquicia.text);
+                    setState(() {
+                      listaFranquicias = [];
+                      FranquiciaActual.franquiciaActual = [];
+                      iniciarFranquicia();
+                      leerfranquicias();
+                      listaFranquicias = FranquiciaActual.franquiciaActual;
+                      selectedFranquicia = listaFranquicias[0];
+                    });
 
-                // Lógica para eliminar el registro
-              },
-            ),
+                    // Lógica para eliminar el registro
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       );
     } else if (selectedOption == 'Ventas Generales') {
       List<ApuestaFranquicia> tabla = [
@@ -735,213 +752,225 @@ class DashboardScreenState extends State<DashboardScreen> {
       ),
       body: Row(
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(
-                height: 25,
-              ),
-              GestureDetector(
-                onTap: () => selectOption('Agregar Franquicia'),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 200,
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          width: 5,
-                          color: const Color.fromARGB(255, 77, 75, 74)),
-                      borderRadius: const BorderRadius.all(Radius.circular(25)),
-                    ),
-                    child: Text(
-                      'Agregar Franquicia',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: selectedOption == 'Agregar Franquicia'
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(
+                    height: 25,
                   ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => selectOption('Actualizar Franquicia'),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 200,
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          width: 5,
-                          color: const Color.fromARGB(255, 77, 75, 74)),
-                      borderRadius: const BorderRadius.all(Radius.circular(25)),
-                    ),
-                    child: Text(
-                      'Actualizar Franquicia',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: selectedOption == 'Actualizar Franquicia'
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => selectOption('Eliminar Franquicia'),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 200,
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          width: 5,
-                          color: const Color.fromARGB(255, 77, 75, 74)),
-                      borderRadius: const BorderRadius.all(Radius.circular(25)),
-                    ),
-                    child: Text(
-                      'Eliminar Franquicia',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: selectedOption == 'Eliminar Franquicia'
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => selectOption('Ventas Generales'),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 200,
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          width: 5,
-                          color: const Color.fromARGB(255, 77, 75, 74)),
-                      borderRadius: const BorderRadius.all(Radius.circular(25)),
-                    ),
-                    child: Text(
-                      'Ventas Generales',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: selectedOption == 'Ventas Generales'
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => selectOption('Opción 5'),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 200,
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          width: 5,
-                          color: const Color.fromARGB(255, 77, 75, 74)),
-                      borderRadius: const BorderRadius.all(Radius.circular(25)),
-                    ),
-                    child: Text(
-                      'Opción 5',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: selectedOption == 'Opción 5'
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => selectOption('Opción 6'),
-                child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Container(
-                      width: 200,
+                  GestureDetector(
+                    onTap: () => selectOption('Agregar Franquicia'),
+                    child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            width: 5,
-                            color: const Color.fromARGB(255, 77, 75, 74)),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(25)),
-                      ),
-                      child: Text(
-                        'Opción 6',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: selectedOption == 'Opción 6'
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                      child: Container(
+                        width: 200,
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              width: 5,
+                              color: const Color.fromARGB(255, 77, 75, 74)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(25)),
+                        ),
+                        child: Text(
+                          'Agregar Franquicia',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: selectedOption == 'Agregar Franquicia'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
                         ),
                       ),
-                    )),
-              ),
-              GestureDetector(
-                onTap: () => selectOption('Opción 7'),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 200,
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          width: 5,
-                          color: const Color.fromARGB(255, 77, 75, 74)),
-                      borderRadius: const BorderRadius.all(Radius.circular(25)),
                     ),
-                    child: Text(
-                      'Opción 7',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: selectedOption == 'Opción 7'
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                  ),
+                  GestureDetector(
+                    onTap: () => selectOption('Actualizar Franquicia'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: 200,
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              width: 5,
+                              color: const Color.fromARGB(255, 77, 75, 74)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(25)),
+                        ),
+                        child: Text(
+                          'Actualizar Franquicia',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight:
+                                selectedOption == 'Actualizar Franquicia'
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () => selectOption('Opción 8'),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    width: 200,
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          width: 5,
-                          color: const Color.fromARGB(255, 77, 75, 74)),
-                      borderRadius: const BorderRadius.all(Radius.circular(25)),
-                    ),
-                    child: Text(
-                      'Opción 8',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: selectedOption == 'Opción 8'
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                  GestureDetector(
+                    onTap: () => selectOption('Eliminar Franquicia'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: 200,
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              width: 5,
+                              color: const Color.fromARGB(255, 77, 75, 74)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(25)),
+                        ),
+                        child: Text(
+                          'Eliminar Franquicia',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: selectedOption == 'Eliminar Franquicia'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                  GestureDetector(
+                    onTap: () => selectOption('Ventas Generales'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: 200,
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              width: 5,
+                              color: const Color.fromARGB(255, 77, 75, 74)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(25)),
+                        ),
+                        child: Text(
+                          'Ventas Generales',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: selectedOption == 'Ventas Generales'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => selectOption('Opción 5'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: 200,
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              width: 5,
+                              color: const Color.fromARGB(255, 77, 75, 74)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(25)),
+                        ),
+                        child: Text(
+                          'Opción 5',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: selectedOption == 'Opción 5'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => selectOption('Opción 6'),
+                    child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Container(
+                          width: 200,
+                          padding: const EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                                width: 5,
+                                color: const Color.fromARGB(255, 77, 75, 74)),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(25)),
+                          ),
+                          child: Text(
+                            'Opción 6',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: selectedOption == 'Opción 6'
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        )),
+                  ),
+                  GestureDetector(
+                    onTap: () => selectOption('Opción 7'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: 200,
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              width: 5,
+                              color: const Color.fromARGB(255, 77, 75, 74)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(25)),
+                        ),
+                        child: Text(
+                          'Opción 7',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: selectedOption == 'Opción 7'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => selectOption('Opción 8'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        width: 200,
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              width: 5,
+                              color: const Color.fromARGB(255, 77, 75, 74)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(25)),
+                        ),
+                        child: Text(
+                          'Opción 8',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: selectedOption == 'Opción 8'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
           Expanded(
             flex: 2,
