@@ -1,8 +1,6 @@
 import 'package:banquero/common.dart';
 import 'package:banquero/mi_pag_inicial.dart';
-import 'package:banquero/start_page.dart';
 import 'package:flutter/material.dart';
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
@@ -64,7 +62,8 @@ class _MyWidgetState extends State<MyWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _user == null ? const StartPage() : const DashboardApp(),
+//      body: _user == null ? const StartPage() : const DashboardApp(),
+      body: _user == null ? const DashboardApp() : const DashboardApp(),
     );
   }
 }

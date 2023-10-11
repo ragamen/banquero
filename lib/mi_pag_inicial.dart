@@ -2,8 +2,12 @@ import 'package:banquero/common.dart';
 import 'package:banquero/helper/franquicia_helper.dart';
 import 'package:banquero/main.dart';
 import 'package:banquero/modelos/apuesta_franquicia.dart';
+import 'package:banquero/modelos/draw.dart';
 import 'package:banquero/modelos/franquicia.dart';
 import 'package:banquero/modelos/franquicialista.dart';
+import 'package:banquero/modelos/lottery.dart';
+import 'package:banquero/modelos/number.dart';
+import 'package:banquero/utils/lotteries.dart';
 import 'package:flutter/material.dart';
 
 class DashboardApp extends StatelessWidget {
@@ -41,6 +45,13 @@ class DashboardScreenState extends State<DashboardScreen> {
   TextEditingController cupo = TextEditingController();
   TextEditingController comision = TextEditingController();
   TextEditingController nroticket = TextEditingController();
+  List<Lottery> selectedLotteries = [];
+  List<Draw> selectedDraws = [];
+  List<Number> selectedNumbers = [];
+
+  Lottery? selectedLottery;
+  Draw? selectedDraw;
+  Number? selectedNumber;
   Franquicia? selectedFranquicia;
   List<Franquicia> listaFranquicias = [];
   void selectOption(String option) {
@@ -48,6 +59,41 @@ class DashboardScreenState extends State<DashboardScreen> {
       selectedOption = option;
     });
   }
+
+  List<Draw> availableDraws = [];
+  List<Draw> getAvailableDraws() {
+    if (availableDraws.isEmpty) {
+      // Realizar alguna acción o devolver un valor predeterminado si la lista está vacía
+      return [];
+    }
+
+    final now = DateTime.now();
+    DateTime fiveMinutesFromNow = now.subtract(const Duration(minutes: 5));
+    final filteredDraws = availableDraws.where((draw) {
+      final drawTime = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        int.parse(draw.name.split(':')[0]),
+        int.parse(draw.name.split(':')[1].split(' ')[0]),
+      );
+      return drawTime.isAfter(fiveMinutesFromNow);
+    }).toList();
+
+    return filteredDraws;
+  }
+
+  List<Lottery> getAvailableLotteries() {
+    if (selectedLottery == null) {
+      // Si no se ha seleccionado ninguna lotería, se muestran todas las opciones
+      return Loterias.lotteries;
+    } else {
+      // Si la lotería seleccionada no pertenece a ningún grupo, no se muestran opciones adicionales
+      return [selectedLottery!];
+    }
+  }
+
+  List<Lottery> availableLotteries = [];
 
   @override
   void initState() {
@@ -61,6 +107,7 @@ class DashboardScreenState extends State<DashboardScreen> {
             listaFranquicias.isNotEmpty ? listaFranquicias[0] : null;
       });
     });
+    availableLotteries = getAvailableLotteries();
   }
 
   void iniciarFranquicia() {
@@ -301,14 +348,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                       listaFranquicias = [];
                       FranquiciaActual.franquiciaActual = [];
                       leerfranquicias();
-                      //                  if (FranquiciaActual.franquiciaActual.isNotEmpty) {
-                      //                    listaFranquicias = FranquiciaActual.franquiciaActual;
-                      //                    selectedFranquicia = listaFranquicias[0];
-                      //                  }
-                      //                  selectedOption = 'Agregar Franquicia';
                     });
-
-                    // Lógica para actualizar el registro
                   },
                 ),
               ),
@@ -708,10 +748,214 @@ class DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       );
-    } else if (selectedOption == 'Opción 5') {
-      return const Column(
+    } else if (selectedOption == 'Premiacion') {
+      return Column(
         children: [
-          Text('Contenido de la Opción 5'),
+          /*
+          *
+          *Comienzo de la premiacion
+          *
+          */
+          const Row(
+            children: [
+              Text(
+                'Lotería',
+                style: TextStyle(fontSize: 16.0),
+              ),
+              SizedBox(width: 205.0),
+              Text(
+                'Sorteo',
+                style: TextStyle(fontSize: 16.0),
+              ),
+              SizedBox(width: 200.0),
+              Text(
+                'Número',
+                style: TextStyle(fontSize: 16.0),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: SizedBox(
+                  width: 200,
+                  child: DropdownButton<Lottery>(
+                    borderRadius:
+                        const BorderRadius.all(Radius.elliptical(25, 25)),
+                    value: selectedLottery,
+                    onChanged: (Lottery? newValue) {
+                      setState(() {
+                        if (newValue != null) {
+                          // Desmarcar todos los elementos seleccionados previamente
+                          for (var lottery in selectedLotteries) {
+                            lottery.isSelected = false;
+                          }
+                          // Agregar el nuevo elemento seleccionado
+                          selectedLotteries.clear();
+                          selectedLotteries.add(newValue);
+                          newValue.isSelected = true;
+                          selectedLottery = newValue;
+                          // Actualizar availableDraws después de seleccionar la primera lotería
+                          availableDraws = selectedLottery!.draws;
+                          availableDraws = getAvailableDraws();
+                          // availableLotteries = getAvailableLotteries();
+                        }
+
+//                        availableLotteries = getAvailableLotteries();
+                      });
+                    },
+                    items: availableLotteries.map((Lottery lottery) {
+                      return DropdownMenuItem<Lottery>(
+                        value: lottery,
+                        child: SizedBox(
+                          width: 160,
+                          child: ListTile(
+                            title: Text(lottery.name),
+                            trailing: lottery.isSelected
+                                ? const Icon(Icons.check)
+                                : null,
+                            tileColor:
+                                lottery.isSelected ? Colors.grey[200] : null,
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: 200,
+                    // sorteos
+                    child: DropdownButton<Draw>(
+                      value: selectedDraw,
+                      onChanged: (Draw? newValue) {
+                        setState(() {
+                          if (newValue != null) {
+                            // Desmarcar todos los elementos seleccionados previamente
+                            for (var draw in selectedDraws) {
+                              draw.isSelected = false;
+                            }
+                            // Agregar el nuevo elemento seleccionado
+                            selectedDraws.clear();
+                            selectedDraws.add(newValue);
+                            newValue.isSelected = true;
+                            selectedDraw = newValue;
+                          }
+                        });
+                      },
+                      items: selectedLottery != null
+                          ? availableDraws.map((Draw draw) {
+                              return DropdownMenuItem<Draw>(
+                                value: draw,
+                                child: SizedBox(
+                                  width: 200,
+                                  child: ListTile(
+                                    title: Text(draw.name),
+                                    trailing: draw.isSelected
+                                        ? const Icon(Icons.check)
+                                        : null,
+                                    tileColor: draw.isSelected
+                                        ? const Color.fromARGB(
+                                            255, 208, 206, 206)
+                                        : null,
+                                  ),
+                                ),
+                              );
+                            }).toList()
+                          : [],
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+// Numeros
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    width: 200,
+                    child: DropdownButton<Number>(
+                      value: selectedNumber,
+                      onChanged: (Number? newValue) {
+                        setState(() {
+                          if (newValue != null) {
+                            // Desmarcar todos los elementos seleccionados previamente
+                            for (var number in selectedNumbers) {
+                              number.isSelected = false;
+                            }
+                            // Agregar el nuevo elemento seleccionado
+                            selectedNumbers.clear();
+                            selectedNumbers.add(newValue);
+                            newValue.isSelected = true;
+                            selectedNumber = newValue;
+                          }
+                        });
+                      },
+                      items: selectedDraw != null
+                          ? selectedDraw?.numbers.map((Number number) {
+                              return DropdownMenuItem<Number>(
+                                value: number,
+                                child: SizedBox(
+                                  width: 200,
+                                  child: ListTile(
+                                    title: Text(number.value.toString()),
+                                    trailing: number.isSelected
+                                        ? const Icon(Icons.check)
+                                        : null,
+                                    tileColor: number.isSelected
+                                        ? Colors.grey[200]
+                                        : null,
+                                  ),
+                                ),
+                              );
+                            }).toList()
+                          : [],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8.0),
+          SizedBox(
+            width: 100,
+            height: 35,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.yellow, // Background color
+              ),
+              onPressed: () {
+                for (Lottery lottery in selectedLotteries) {
+                  lottery.isSelected = false;
+                }
+
+                for (Draw draw in selectedDraws) {
+                  draw.isSelected = false;
+                }
+
+                for (Number number in selectedNumbers) {
+                  number.isSelected = false;
+                }
+                setState(() {
+                  availableLotteries = getAvailableLotteries();
+                });
+              },
+              child: const Text(
+                'Agregar a la lista de compras',
+                style: TextStyle(color: Colors.black),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16.0),
+/*
+*
+*Funal de la premiacion
+*/
         ],
       );
     } else if (selectedOption == 'Opción 6') {
@@ -765,7 +1009,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
-                        width: 200,
+                        width: 160,
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           border: Border.all(
@@ -791,7 +1035,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
-                        width: 200,
+                        width: 160,
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           border: Border.all(
@@ -818,7 +1062,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
-                        width: 200,
+                        width: 160,
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           border: Border.all(
@@ -844,7 +1088,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
-                        width: 200,
+                        width: 160,
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           border: Border.all(
@@ -866,11 +1110,11 @@ class DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => selectOption('Opción 5'),
+                    onTap: () => selectOption('Premiacion'),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
-                        width: 200,
+                        width: 160,
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           border: Border.all(
@@ -880,10 +1124,10 @@ class DashboardScreenState extends State<DashboardScreen> {
                               const BorderRadius.all(Radius.circular(25)),
                         ),
                         child: Text(
-                          'Opción 5',
+                          'Premiacion',
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: selectedOption == 'Opción 5'
+                            fontWeight: selectedOption == 'Premiacion'
                                 ? FontWeight.bold
                                 : FontWeight.normal,
                           ),
@@ -896,7 +1140,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Container(
-                          width: 200,
+                          width: 160,
                           padding: const EdgeInsets.all(8.0),
                           decoration: BoxDecoration(
                             border: Border.all(
@@ -921,7 +1165,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
-                        width: 200,
+                        width: 160,
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           border: Border.all(
@@ -947,7 +1191,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
-                        width: 200,
+                        width: 160,
                         padding: const EdgeInsets.all(8.0),
                         decoration: BoxDecoration(
                           border: Border.all(
@@ -973,21 +1217,20 @@ class DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           Expanded(
-            flex: 2,
+            flex: 4,
             child: Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 6.0,
+                  vertical: 6.0), // Ajusta el valor de padding aquí
+              // padding: const EdgeInsets.all(6.0),
               child: Container(
                   padding: const EdgeInsets.all(8.0),
                   decoration: BoxDecoration(
                     border: Border.all(
-                        width: 5, color: const Color.fromARGB(255, 77, 75, 74)),
+                        width: 5,
+                        color: const Color.fromARGB(255, 60, 232, 121)),
                     borderRadius: const BorderRadius.all(Radius.circular(25)),
                   ),
-/*
-                  width: 160,
-                  height: double.infinity,
-                  decoration: const BoxDecoration(
-                      color: Color.fromARGB(255, 151, 201, 223)),*/
                   child: _buildDataInput()),
             ),
           ),
