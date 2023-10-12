@@ -1,14 +1,19 @@
 import 'package:banquero/common.dart';
+import 'package:banquero/helper/apuestafranquicia_helper.dart';
 import 'package:banquero/helper/franquicia_helper.dart';
+import 'package:banquero/helper/premiacion_helper.dart';
 import 'package:banquero/main.dart';
 import 'package:banquero/modelos/apuesta_franquicia.dart';
 import 'package:banquero/modelos/draw.dart';
 import 'package:banquero/modelos/franquicia.dart';
 import 'package:banquero/modelos/franquicialista.dart';
+import 'package:banquero/modelos/ganador.dart';
 import 'package:banquero/modelos/lottery.dart';
 import 'package:banquero/modelos/number.dart';
+import 'package:banquero/modelos/premiacion.dart';
 import 'package:banquero/utils/lotteries.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class DashboardApp extends StatelessWidget {
   const DashboardApp({super.key});
@@ -45,10 +50,12 @@ class DashboardScreenState extends State<DashboardScreen> {
   TextEditingController cupo = TextEditingController();
   TextEditingController comision = TextEditingController();
   TextEditingController nroticket = TextEditingController();
+  List<ApuestaFranquicia> tabla = [];
+
   List<Lottery> selectedLotteries = [];
   List<Draw> selectedDraws = [];
   List<Number> selectedNumbers = [];
-
+  DateTime? selectedDate;
   Lottery? selectedLottery;
   Draw? selectedDraw;
   Number? selectedNumber;
@@ -94,6 +101,20 @@ class DashboardScreenState extends State<DashboardScreen> {
   }
 
   List<Lottery> availableLotteries = [];
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -475,7 +496,7 @@ class DashboardScreenState extends State<DashboardScreen> {
         ),
       );
     } else if (selectedOption == 'Ventas Generales') {
-      List<ApuestaFranquicia> tabla = [
+      /* List<ApuestaFranquicia> tabla = [
         ApuestaFranquicia(
           codigofranquicia: 'Agencia 1',
           fecha: 'Fecha 1',
@@ -485,86 +506,10 @@ class DashboardScreenState extends State<DashboardScreen> {
           jugada: 100.0,
           maximo: 100,
           premio: 50,
-          activo: true,
-        ),
-        ApuestaFranquicia(
-          codigofranquicia: 'Agencia 1',
-          fecha: 'Fecha 1',
-          loteria: 'Loteria 1',
-          sorteo: 'Sorteo 2',
-          numero: 'Numero 1',
-          jugada: 100.0,
-          maximo: 100,
-          premio: 50,
-          activo: true,
-        ),
-        ApuestaFranquicia(
-          codigofranquicia: 'Agencia 1',
-          fecha: 'Fecha 1',
-          loteria: 'Loteria 1',
-          sorteo: 'Sorteo 3',
-          numero: 'Numero 1',
-          jugada: 100.0,
-          maximo: 100,
-          premio: 50,
-          activo: true,
-        ),
-        ApuestaFranquicia(
-          codigofranquicia: 'Agencia 1',
-          fecha: 'Fecha 1',
-          loteria: 'Loteria 2',
-          sorteo: 'Sorteo 1',
-          numero: 'Numero 1',
-          jugada: 100.0,
-          maximo: 100,
-          premio: 50,
-          activo: true,
-        ),
-        ApuestaFranquicia(
-          codigofranquicia: 'Agencia 1',
-          fecha: 'Fecha 1',
-          loteria: 'Loteria 3',
-          sorteo: 'Sorteo 1',
-          numero: 'Numero 1',
-          jugada: 100.0,
-          maximo: 100,
-          premio: 50,
-          activo: true,
-        ),
-        ApuestaFranquicia(
-          codigofranquicia: 'Agencia 2',
-          fecha: 'Fecha 2',
-          loteria: 'Loteria 1',
-          sorteo: 'Sorteo 2',
-          numero: 'Numero 2',
-          jugada: 200.0,
-          maximo: 200,
-          premio: 100,
-          activo: true,
-        ),
-        ApuestaFranquicia(
-          codigofranquicia: 'Agencia 2',
-          fecha: 'Fecha 2',
-          loteria: 'Loteria 2',
-          sorteo: 'Sorteo 2',
-          numero: 'Numero 2',
-          jugada: 200.0,
-          maximo: 200,
-          premio: 100,
-          activo: true,
-        ),
-        ApuestaFranquicia(
-          codigofranquicia: 'Agencia 2',
-          fecha: 'Fecha 2',
-          loteria: 'Loteria 3',
-          sorteo: 'Sorteo 2',
-          numero: 'Numero 2',
-          jugada: 200.0,
-          maximo: 200,
-          premio: 100,
           activo: true,
         ),
       ];
+*/
       Map<String, List<ApuestaFranquicia>> registrosPorFranquicia = {};
 
       for (var registro in tabla) {
@@ -582,170 +527,193 @@ class DashboardScreenState extends State<DashboardScreen> {
       }
       return Column(
         children: [
-          const TextField(
-            decoration: InputDecoration(labelText: 'Fecha'),
+          TextField(
+            decoration: const InputDecoration(
+              labelText: 'Fecha',
+            ),
+            controller: TextEditingController(
+              text: selectedDate != null
+                  ? DateFormat('dd/MM/yy').format(selectedDate!)
+                  : '',
+            ),
+            readOnly: true,
           ),
           ElevatedButton(
-            child: const Text('Generar Reporte'),
             onPressed: () {
-              // Lógica para generar el reporte según la fecha ingresada
+              _selectDate(context);
+              if (selectedDate != null) {
+                setState(() async {
+                  tabla = await ApuestaFranquiciaHelper.getApfranquicias(
+                      selectedDate.toString());
+                });
+              }
             },
-          ),
-          const SizedBox(height: 16),
-          // Mostrar el reporte generado
-          Expanded(
-            child: ListView(
+            child: const Row(
               children: [
-                for (var codigofranquicia in registrosPorFranquicia.keys)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        codigofranquicia,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18),
-                      ),
-                      const SizedBox(height: 8),
-                      for (var loteria
-                          in registrosPorFranquicia[codigofranquicia]!
-                              .map((registro) => registro.loteria)
-                              .toSet())
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              loteria,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                            DataTable(
-                              columns: const [
-                                DataColumn(label: Text('Sorteo')),
-                                DataColumn(label: Text('Jugada')),
-                                DataColumn(label: Text('Premio')),
-                                DataColumn(label: Text('Diferencia')),
-                              ],
-                              rows: registrosPorFranquicia[codigofranquicia]!
-                                  .where(
-                                      (registro) => registro.loteria == loteria)
-                                  .map<DataRow>((registro) {
-                                return DataRow(
-                                  cells: [
-                                    DataCell(Text(registro.sorteo)),
-                                    DataCell(Text(registro.jugada.toString())),
-                                    DataCell(Text(registro.premio.toString())),
-                                    DataCell(Text(
-                                        (registro.jugada - registro.premio)
-                                            .toString())),
-                                  ],
-                                );
-                              }).toList(),
-                            ),
-                            const SizedBox(height: 16),
-                            // Subtotal por lotería
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(8),
+                Icon(Icons.calendar_today),
+                Text('Seleccionar fecha'),
+              ],
+            ),
+          ),
+          if (selectedDate != null) ...[
+            const SizedBox(height: 16),
+            // Mostrar el reporte generado
+            Expanded(
+              child: ListView(
+                children: [
+                  for (var codigofranquicia in registrosPorFranquicia.keys)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          codigofranquicia,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18),
+                        ),
+                        const SizedBox(height: 8),
+                        for (var loteria
+                            in registrosPorFranquicia[codigofranquicia]!
+                                .map((registro) => registro.loteria)
+                                .toSet())
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                loteria,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
                               ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Subtotal $loteria:',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    'Jugada: ${registrosPorFranquicia[codigofranquicia]!.where((registro) => registro.loteria == loteria).map((registro) => registro.jugada).reduce((a, b) => a + b)}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    'Premio: ${registrosPorFranquicia[codigofranquicia]!.where((registro) => registro.loteria == loteria).map((registro) => registro.premio).reduce((a, b) => a + b)}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    'Diferencia: ${registrosPorFranquicia[codigofranquicia]!.where((registro) => registro.loteria == loteria).map((registro) => registro.jugada - registro.premio).reduce((a, b) => a + b)}',
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
+                              DataTable(
+                                columns: const [
+                                  DataColumn(label: Text('Sorteo')),
+                                  DataColumn(label: Text('Jugada')),
+                                  DataColumn(label: Text('Premio')),
+                                  DataColumn(label: Text('Diferencia')),
                                 ],
+                                rows: registrosPorFranquicia[codigofranquicia]!
+                                    .where((registro) =>
+                                        registro.loteria == loteria)
+                                    .map<DataRow>((registro) {
+                                  return DataRow(
+                                    cells: [
+                                      DataCell(Text(registro.sorteo)),
+                                      DataCell(
+                                          Text(registro.jugada.toString())),
+                                      DataCell(
+                                          Text(registro.premio.toString())),
+                                      DataCell(Text(
+                                          (registro.jugada - registro.premio)
+                                              .toString())),
+                                    ],
+                                  );
+                                }).toList(),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                          ],
+                              const SizedBox(height: 16),
+                              // Subtotal por lotería
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Subtotal $loteria:',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      'Jugada: ${registrosPorFranquicia[codigofranquicia]!.where((registro) => registro.loteria == loteria).map((registro) => registro.jugada).reduce((a, b) => a + b)}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      'Premio: ${registrosPorFranquicia[codigofranquicia]!.where((registro) => registro.loteria == loteria).map((registro) => registro.premio).reduce((a, b) => a + b)}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      'Diferencia: ${registrosPorFranquicia[codigofranquicia]!.where((registro) => registro.loteria == loteria).map((registro) => registro.jugada - registro.premio).reduce((a, b) => a + b)}',
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          ),
+                        // Subtotal por agencia
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Subtotal $codigofranquicia:',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Jugada: ${registrosPorFranquicia[codigofranquicia]!.map((registro) => registro.jugada).reduce((a, b) => a + b)}',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Premio: ${registrosPorFranquicia[codigofranquicia]!.map((registro) => registro.premio).reduce((a, b) => a + b)}',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                'Diferencia: ${registrosPorFranquicia[codigofranquicia]!.map((registro) => registro.jugada - registro.premio).reduce((a, b) => a + b)}',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
-                      // Subtotal por agencia
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Subtotal $codigofranquicia:',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Jugada: ${registrosPorFranquicia[codigofranquicia]!.map((registro) => registro.jugada).reduce((a, b) => a + b)}',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Premio: ${registrosPorFranquicia[codigofranquicia]!.map((registro) => registro.premio).reduce((a, b) => a + b)}',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Diferencia: ${registrosPorFranquicia[codigofranquicia]!.map((registro) => registro.jugada - registro.premio).reduce((a, b) => a + b)}',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            // Total general
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Total general:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-              ],
+                  Text(
+                    'Jugada: $totalJugada',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'Premio: $totalPremio',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    'Diferencia: ${totalJugada - totalPremio}',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
             ),
-          ),
-          // Total general
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Total general:',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Jugada: $totalJugada',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Premio: $totalPremio',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Diferencia: ${totalJugada - totalPremio}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
+          ],
         ],
       );
     } else if (selectedOption == 'Premiacion') {
@@ -921,7 +889,7 @@ class DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 8.0),
+          const SizedBox(height: 20.0),
           SizedBox(
             width: 100,
             height: 35,
@@ -930,6 +898,37 @@ class DashboardScreenState extends State<DashboardScreen> {
                 backgroundColor: Colors.yellow, // Background color
               ),
               onPressed: () {
+                for (Lottery lottery in selectedLotteries) {
+                  for (Draw draw in selectedDraws) {
+                    for (Number number in selectedNumbers) {
+                      Ganador ganador = Ganador(
+                        lottery: lottery,
+                        draw: draw,
+                        number: number,
+                      );
+                      final xxfecha = DateTime.now();
+                      final formato = DateFormat('dd/MM/yyyy');
+                      final fechaFormateada = formato.format(xxfecha);
+                      var xfecha = fechaFormateada;
+                      //           String formatteTime = DateFormat.Hms().format(xxfecha);
+                      //var hora = formattedTime;
+                      late Premiacion premiacion;
+                      premiacion = Premiacion(
+                        fecha: xfecha,
+                        loteria: ganador.lottery.name,
+                        sorteo: ganador.draw.name,
+                        numero: ganador.number.value,
+                      );
+                      PremiacionHelper.createPremiacion(premiacion);
+                      PremiacionHelper.updatePremiacionGeneral(premiacion);
+                      PremiacionHelper.updatePremiacionFranquicia(premiacion);
+                      PremiacionHelper.updatePremiacionAgencia(premiacion);
+
+                      setState(() {});
+                    }
+                  }
+                }
+
                 for (Lottery lottery in selectedLotteries) {
                   lottery.isSelected = false;
                 }

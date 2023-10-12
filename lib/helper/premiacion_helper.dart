@@ -1,5 +1,6 @@
 import 'package:banquero/common.dart';
 import 'package:banquero/modelos/apuesta_agencia.dart';
+import 'package:banquero/modelos/apuesta_franquicia.dart';
 import 'package:banquero/modelos/apuesta_general.dart';
 import 'package:banquero/modelos/premiacion.dart';
 
@@ -82,6 +83,44 @@ class PremiacionHelper {
     }
   }
 
+//
+// Franquicia
+//
+  static Future<void> updatePremiacionFranquicia(Premiacion premiacion) async {
+    // ignore: unused_local_variable
+    final response = await cliente
+        .from('apuestafranquicia')
+        .select(
+            'codigofranquicia,fecha,loteria,sorteo,numero,jugada,maximo,premio')
+        .eq('fecha', premiacion.fecha)
+        .eq('loteria', premiacion.loteria)
+        .eq('sorteo', premiacion.sorteo)
+        .eq('numero', premiacion.numero);
+    var count = response.length;
+    List<ApuestaFranquicia> lista = [];
+    for (int i = 0; i < count; i++) {
+      lista[i] = ApuestaFranquicia.fromMap(response[i]);
+    }
+
+    if (lista.isNotEmpty) {
+      count = lista.length;
+      for (int i = 0; i < count; i++) {
+        lista[i].premio = lista[i].jugada * 30;
+        await cliente
+            .from('apuestafranquicia')
+            .update({'premio': lista[i].premio})
+            .eq('codigofranquicia', lista[i].codigofranquicia)
+            .eq('fecha', lista[i].fecha)
+            .eq('loteria', lista[i].loteria)
+            .eq('sorteo', lista[i].sorteo)
+            .eq('numero', lista[i].numero);
+      }
+    }
+  }
+//
+// Agencias
+//
+
   static Future<void> updatePremiacionAgencia(Premiacion premiacion) async {
     // ignore: unused_local_variable
     final response = await cliente
@@ -104,6 +143,7 @@ class PremiacionHelper {
         await cliente
             .from('apuestaagencia')
             .update({'premio': lista[i].premio})
+            .eq('agencia', lista[i].agencia)
             .eq('fecha', lista[i].fecha)
             .eq('loteria', lista[i].loteria)
             .eq('sorteo', lista[i].sorteo)
