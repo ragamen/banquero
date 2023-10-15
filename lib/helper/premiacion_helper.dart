@@ -151,4 +151,38 @@ class PremiacionHelper {
       }
     }
   }
+  //
+// tickets
+//
+
+  static Future<void> updatePremiacionTickets(Premiacion premiacion) async {
+    // ignore: unused_local_variable
+    final response = await cliente
+        .from('tickets')
+        .select('agencia,fecha,loteria,sorteo,numero,jugada,maximo,premio')
+        .eq('fecha', premiacion.fecha)
+        .eq('loteria', premiacion.loteria)
+        .eq('sorteo', premiacion.sorteo)
+        .eq('numero', premiacion.numero);
+    var count = response.length;
+    List<ApuestaAgencia> lista = [];
+    for (int i = 0; i < count; i++) {
+      lista[i] = ApuestaAgencia.fromMap(response[i]);
+    }
+
+    if (lista.isNotEmpty) {
+      count = lista.length;
+      for (int i = 0; i < count; i++) {
+        lista[i].premio = lista[i].jugada * 30;
+        await cliente
+            .from('apuestaagencia')
+            .update({'premio': lista[i].premio})
+            .eq('agencia', lista[i].agencia)
+            .eq('fecha', lista[i].fecha)
+            .eq('loteria', lista[i].loteria)
+            .eq('sorteo', lista[i].sorteo)
+            .eq('numero', lista[i].numero);
+      }
+    }
+  }
 }

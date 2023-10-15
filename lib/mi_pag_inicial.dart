@@ -923,6 +923,7 @@ class DashboardScreenState extends State<DashboardScreen> {
                       PremiacionHelper.updatePremiacionGeneral(premiacion);
                       PremiacionHelper.updatePremiacionFranquicia(premiacion);
                       PremiacionHelper.updatePremiacionAgencia(premiacion);
+                      PremiacionHelper.updatePremiacionTickets(premiacion);
 
                       setState(() {});
                     }
@@ -953,7 +954,7 @@ class DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 16.0),
 /*
 *
-*Funal de la premiacion
+*Final de la premiacion
 */
         ],
       );
